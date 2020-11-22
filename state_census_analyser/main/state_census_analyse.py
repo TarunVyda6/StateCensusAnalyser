@@ -1,7 +1,7 @@
 import csv
 import logging
 import os
-from state_census_analyser.main.csv_exceptions import WrongFileType
+from state_census_analyser.main.csv_exceptions import *
 import json
 
 file = os.path.join(os.path.dirname(__file__), 'census_analyser.log')
@@ -14,32 +14,31 @@ class StateCensusAnalyser:
 
     @staticmethod
     def no_of_states(path):
+        if not path.endswith(".csv"):
+            logging.debug("wrong file extension")
+            raise WrongFileType("wrong file extension")
         try:
-            logging.debug("inside")
-            if not path.endswith(".csv"):
-                raise WrongFileType("wrong file extension")
-        except WrongFileType as e:
-            return e.message
-        try:
-            with open(path, mode='r') as csv_file:
+            with open(path, mode='r', newline="") as csv_file:
+                StateCensusAnalyser.check_for_delimiter(path)
                 csv_reader = csv.DictReader(csv_file)
                 value = len(list(csv_reader))
-
-                logging.info(value)
+                logging.debug(value)
                 return value
         except FileNotFoundError:
-            return "invalid_file_path"
+            logging.debug("Wrong file path")
+            raise FileNotPresent("Wrong file path")
+        except KeyError:
+            logging.debug("incorrect header")
+            raise WrongHeaderException("incorrect header")
 
     @staticmethod
     def sort_by_state(path):
-        try:
-            if not path.endswith(".csv"):
-                raise WrongFileType("wrong file extension")
-        except WrongFileType as e:
-            logging.debug(e.message)
-            return e.message
+        if not path.endswith(".csv"):
+            logging.debug("Wrong file extension")
+            raise WrongFileType("wrong file extension")
         try:
             with open(path, mode='r') as csv_file:
+                StateCensusAnalyser.check_for_delimiter(path)
                 csv_reader = csv.DictReader(csv_file)
                 census_dictionary = {}
                 for row in csv_reader:
@@ -48,7 +47,16 @@ class StateCensusAnalyser:
                 return json.dumps(sorted(census_dictionary.get("State")))
 
         except FileNotFoundError:
-            logging.debug("invalid_file_path")
-            return "invalid_file_path"
+            logging.debug("invalid file path")
+            raise FileNotPresent("invalid file path")
+        except Exception:
+            raise WrongHeaderException("incorrect header")
 
-
+    @staticmethod
+    def check_for_delimiter(path):
+        with open(path, newline="") as csv_data:
+            try:
+                csv.Sniffer().sniff(csv_data.read(), delimiters=",")
+            except:
+                logging.debug("invalid delimiter")
+                raise WrongDelimiterException("invalid delimter")
