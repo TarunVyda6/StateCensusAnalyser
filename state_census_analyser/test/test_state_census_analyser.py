@@ -16,8 +16,8 @@ def test_for_matching_no_of_records(path, result):
 def test_for_matching_sort_by_states(path, result1, result2):
     path = os.path.join(os.path.dirname(__file__), path)
     json_list = json.loads(StateCensusAnalyser.sort_by_state(path))
-    assert json_list[0] == result1
-    assert json_list[28] == result2
+    assert json_list[0].get("State") == result1
+    assert json_list[len(json_list) - 1].get("State") == result2
 
 
 @pytest.mark.parametrize('path, result', [("IndiaStateCensusData - IndiaStateCensusData.txt", WrongFileType),
