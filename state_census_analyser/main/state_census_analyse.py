@@ -41,3 +41,14 @@ class StateCensusAnalyser:
         census_list = CSVFileReader.load_csv_file(path)
         sorted_list = sorted(census_list, key=lambda x: int(x.get("Population")), reverse=True)
         return json.dumps(sorted_list)
+
+    @staticmethod
+    def sort_by_state_population_density_descending(path):
+        """
+        takes csv file path as input and load the csv data and return list of data sorted by state population density in json format
+        :param path: takes csv file path as param
+        :return: list of csv state code analyser data in sorted order by state population density
+        """
+        census_list = CSVFileReader.load_csv_file(path)
+        sorted_list = sorted(census_list, key=lambda x: int(x.get("DensityPerSqKm")), reverse=True)
+        return json.dumps(sorted_list)
